@@ -1,0 +1,1076 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 문제 1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "── \u001b[1mAttaching packages\u001b[22m ─────────────────────────────────────── tidyverse 1.2.1 ──\n",
+      "\u001b[32m✔\u001b[39m \u001b[34mggplot2\u001b[39m 3.1.0.\u001b[31m9000\u001b[39m     \u001b[32m✔\u001b[39m \u001b[34mpurrr  \u001b[39m 0.3.1     \n",
+      "\u001b[32m✔\u001b[39m \u001b[34mtibble \u001b[39m 2.0.1          \u001b[32m✔\u001b[39m \u001b[34mdplyr  \u001b[39m 0.8.0.\u001b[31m1\u001b[39m   \n",
+      "\u001b[32m✔\u001b[39m \u001b[34mtidyr  \u001b[39m 0.8.3          \u001b[32m✔\u001b[39m \u001b[34mstringr\u001b[39m 1.4.0     \n",
+      "\u001b[32m✔\u001b[39m \u001b[34mreadr  \u001b[39m 1.3.1          \u001b[32m✔\u001b[39m \u001b[34mforcats\u001b[39m 0.4.0     \n",
+      "── \u001b[1mConflicts\u001b[22m ────────────────────────────────────────── tidyverse_conflicts() ──\n",
+      "\u001b[31m✖\u001b[39m \u001b[34mdplyr\u001b[39m::\u001b[32mfilter()\u001b[39m masks \u001b[34mstats\u001b[39m::filter()\n",
+      "\u001b[31m✖\u001b[39m \u001b[34mdplyr\u001b[39m::\u001b[32mlag()\u001b[39m    masks \u001b[34mstats\u001b[39m::lag()\n"
+     ]
+    }
+   ],
+   "source": [
+    "library(tidyverse)\n",
+    "load(\"../input/welfare2016.rda\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "'numeric'"
+      ],
+      "text/latex": [
+       "'numeric'"
+      ],
+      "text/markdown": [
+       "'numeric'"
+      ],
+      "text/plain": [
+       "[1] \"numeric\""
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "\n",
+       "   1    2 \n",
+       "7659 8330 "
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "\n",
+       "FALSE \n",
+       "15989 "
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "< table of extent 0 >"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "class(welfare$religion)\n",
+    "table(welfare$religion)\n",
+    "table(is.na(welfare$religion))\n",
+    "table(welfare$group_marriage)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "welfare %<>% mutate(sex=ifelse(sex==1, \"male\", \"female\")) %>% \n",
+    "             mutate(income=ifelse(income==0, NA, income)) %>% \n",
+    "             mutate(age = 2016-birth+1) %>% \n",
+    "             mutate(ageg = ifelse(age < 30, 'young',\n",
+    "                                  ifelse(age < 60, 'middle', 'old'))) %>% \n",
+    "             mutate(code_job = as.character(code_job)) %>% \n",
+    "             mutate(code_job = ifelse(str_length(code_job)==3,\n",
+    "                                      str_c(\"0\", code_job),\n",
+    "                                      code_job))%>%\n",
+    "             mutate(religion=ifelse(religion==1, \"yes\", \"no\")) %>% \n",
+    "             mutate(group_marriage=(ifelse(marriage==1, \"marriage\",\n",
+    "                                    ifelse(marriage==3, \"divorce\", NA)))) %>%\n",
+    "             \n",
+    "             select(sex, \n",
+    "                    birth, \n",
+    "                    age,\n",
+    "                    ageg,\n",
+    "                    marriage,\n",
+    "                    group_marriage,\n",
+    "                    religion, \n",
+    "                    income, \n",
+    "                    code_job, \n",
+    "                    code_region) \n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "'character'"
+      ],
+      "text/latex": [
+       "'character'"
+      ],
+      "text/markdown": [
+       "'character'"
+      ],
+      "text/plain": [
+       "[1] \"character\""
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "\n",
+       "  no  yes \n",
+       "8330 7659 "
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "\n",
+       "FALSE \n",
+       "15989 "
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "\n",
+       " divorce marriage \n",
+       "     701     8058 "
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "class(welfare$religion)\n",
+    "table(welfare$religion)\n",
+    "table(is.na(welfare$religion))\n",
+    "table(welfare$group_marriage)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 1) group by"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<thead>\n",
+       "\t<tr><th scope=col>religion</th><th scope=col>group_marriage</th><th scope=col>n</th><th scope=col>tot</th><th scope=col>ratio</th></tr>\n",
+       "</thead>\n",
+       "<tbody>\n",
+       "\t<tr><td>no      </td><td>divorce </td><td>379     </td><td>4382    </td><td>8.649019</td></tr>\n",
+       "\t<tr><td>yes     </td><td>divorce </td><td>322     </td><td>4377    </td><td>7.356637</td></tr>\n",
+       "</tbody>\n",
+       "</table>\n"
+      ],
+      "text/latex": [
+       "\\begin{tabular}{r|lllll}\n",
+       " religion & group\\_marriage & n & tot & ratio\\\\\n",
+       "\\hline\n",
+       "\t no       & divorce  & 379      & 4382     & 8.649019\\\\\n",
+       "\t yes      & divorce  & 322      & 4377     & 7.356637\\\\\n",
+       "\\end{tabular}\n"
+      ],
+      "text/markdown": [
+       "\n",
+       "| religion | group_marriage | n | tot | ratio |\n",
+       "|---|---|---|---|---|\n",
+       "| no       | divorce  | 379      | 4382     | 8.649019 |\n",
+       "| yes      | divorce  | 322      | 4377     | 7.356637 |\n",
+       "\n"
+      ],
+      "text/plain": [
+       "  religion group_marriage n   tot  ratio   \n",
+       "1 no       divorce        379 4382 8.649019\n",
+       "2 yes      divorce        322 4377 7.356637"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "image/png": "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\nVP/1zt/dN3tJkqTG/nT4vf+sPeT4Eb8defLWJdPPPfXkqYtrsz0p0Fw2P2ifpfMm/2PRF/8z\nf+WmKW16HtOlMC9Jkj+O+ultL9f/8LifX3zeyO/1Sl/5y+Mfm7W4bvG/Tjv3uvpt9hxx7u9O\nOvz7bzw84TcPfZDVn4BWxxU7WLW8b560c/eqJEk69NuvV8mEf36yZK+6+x6d+fnpE341qF1x\nkiS9+vb715AjbrjnvTFH9sz2sECzKG631zcrbrrzyY+337drqm72DdOqd7rof5IkWTr7/pv/\nNe+820dsU16QJEnPPlvnvnLEHde8sdMpbyyoT+1/wPe3b1uY9N2ya2WnmSXl2f4haF2EHaza\nRgM6Nj4uzslJ0kn1/03NK9q0oeqSJMnJLflB59Kxz3+QCDsIK+ew3TYedd/kZN/j5r52w+L8\njYf1bJMkyaKZ/0in02cPOWj5pWXLPixp/4Odu/3lvKFDt9tpp2379Ruw68AdS/OyNDmtlLCD\nVSsoXOmNCulkhXcv5OTmJEl9xkYCMm+zA/dbev/Y1xcf/da4qZ12GFGSm5MkSX5pQU5exZ13\n3vSfO0J+Tl7+GWMm/PuVF15+9bWX/3LLzTfcMPDQkb8Y3D9Ls9MaeY8dNFWbvn3ql33wzLxl\nDU/TqaV/+ujzdt/ePLtTAc2quGrPb5cX3PyXv9324aJ9j9yy4WBp5z3T9Qsf+rS2+EsPjv3D\nbS/PnT/twQm33t97+50PG3byBZePu/TojZ+778bszk9r44odNFXZRkcM6vzw2F9elPzkoE3K\n6p6///o3aivPPbRbtucCmtfgPTf9+fgxhRU77NexpOFIYcV3jtmuw21nX1B58mE9Kuteee5P\ntz333tk/aZs3f8F999w5t7R89617pea9/9QTs8q67Jfd4WlthB00WU7e8CvH3H3NNbdf9dvZ\nS/O79dh61BUnbVNWkO2xgObV9Qc/SN97+WY/HLL8wf1/fVXh+CsfuPH3H1XXb7pF/9MuuPxb\nFYVJxWHnHbNk/IMTz7u9urCyfa/tv3f+8Ydka2xap5x0Op3tGaClq11cPT+vokORN0FDa7Tk\nswcGHzvugjvv6V/qaggtnb+j8PUKStt2yPYMQBak62pqlzwy5o/lXYeoOjYI/poCwKotrX7i\nR0ddmVfU/qTL9832LNAkXooFgNVI13444/123bqX5vm9YGwYhB0AQBA+xw4AIAhhBwAQhLAD\nAAhC2AEABCHsAACCEHYA/+GyHlXlGx2R7SkA1oWwA1it3apKcnJy/m9x3XpcCdB8/OYJgNUq\nLCoqKkrnNOGzaZu+EqD5CDugtaipnvHCPz7cadAu+U3Or4c/rl7vKwGaj5digeDu3KpDVY/L\nPnr80m4b9f7ubt9dVJ9OkmTZvNfPOOIH2/XuUlxWteV2g3593cOp1XxtSdVujU8/fn78gXvu\ntEmb0u7b7HTsWTd/MuOsnJycqz76fOWVC97+y9EH7NFns46l7bvsMGifS+9/Y/nv2WbzUTXV\nr556yK6d2paWtttkp/1Peurjxc32HwBoRYQdEF/NwpcG7jNy470PH/mbi0rzchZ9cO+2m33r\nD/e+su3uh579i+P6l8/4zQnf//aw29b8Td57YESPgcc++kbuAT8546Cde/71smP7HXjHKld+\n9uLFPfp+/47H3t9hv6FnHndgxSfPjTig3z6jnmxcUF8z69BvHNJun589+Y/XJ9/0y48fvWG/\n7xxdvx5/YKDVSgOEdkef9kmS7HftlMYjo7ZqV1Da55lPF395oP7O4/snSXLxO/PT6fTvu7ct\n63R449cWt/3fdDqdqqvetrywpP1+MxbXNpxaMOOBirzcJEmunLlo+ZXpdP3BHUvzizd7ZtYX\n3z9VO+f0PlU5uUVPVi9rnOdH977TOM+LI7ZJkuQv85Y2338EoJVwxQ6ILzev7JZjvt3wuG7x\n6+dPm9fj8Bt37ljSeP6gSyckSXLbtf9e3Xeonn7Oa4tqBl43ZouSL96aXLHFfjcM2mTllUtm\n33fPZ4t7H3P7zp2/+P45+e1+NfHodGrZrx/58Is/L79q3AGbN35Jx506JEmyoG6VrwYDrAVh\nB8RXULZt2y/vmFg6d3I6nZ52w845yyms+FaSJNWvrvYGiDl/fyVJkn127Lj8we0Gb77yyqXz\nHkmSpPvQ3ssfbNNzaJIkHz/68Zfz9C/LXe4ODvfSAuuJu2KB+HJyi796kluYJMk2I8ddtMvG\nKywrarPt6r5DqiaVJEnufyZYbsEq/22cSpIk9z9bLScnP0mS1JfX5HJyCpo6OsDaEHZA61Jc\ntXduzulLPthsr72+uok1VTPz6efequpVsbqvav/NLZPk2Ydenn3KJmWNB9+874NVfP+2eyTJ\nuBm3Tk+279R4cMGMCUmSbDRoo/XyIwCsjpdigdYlv6T32VtWzbjrsMc++rzx4IMj9x40aNBz\nNav9vRFVW56/RXH+U8f8fOayL+5eXTzriaMfWkXYlXT80f7tS6Zdd8SLs5c2HEnXVV9w6I05\nuQW/2m+z9fqjAKzIFTug1fnFw1fe1u/ovbtv9eOfHNZn04p//+2Bm/70+vYn3n7iJuWr+5Lc\nws6Trxva/+gbt+qz+7DDdqtY+sE910/4znHfffjqx0tW/Ady7vX3n7XVrqMHdv/mUcMO6Fax\n5Ok/TnjkjXl7jvzLXlVFzfyTAa2dK3ZAq1PRbcjUd549Yf/+L/75lrPPvezZ9wtHXfvn58cO\nWfNX9T7y+n8/MmZAl/m3jrnoj8/NOPiaF+44vXeSJBsX5q2wcqMBZ82Y+ucffXejJ++99ryx\nd83t8D8X/3HqI7/do7l+HoAv5aTT6WzPANDipWtmz1lQUF7VpvirjHvrll22HPpidc2Syrz/\n7r7WdO3cTz4u6Nil4r/8PkCr54odwNdL1c7t1nmjvntOaDySrl9w/q9eqej6s/+26pIkySlo\n17mrqgP+e95jB/D1cgs7Tzz1m/tdfuxuw94+co/t6+a8++D1v5v00ZIznx6e7dEAvuKlWICm\nSdfcPebsS2+496133s9p06X3ln1/dMrFPzu4X7bHAviKsAMACMJ77AAAghB2AABBCDsAgCCE\nHQBAEMIOACAIYQcAEISwAwAIQtgBAAQh7AAAgvj/2GcYnf3tVbgAAAAASUVORK5CYII="
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "welfare %>% filter(!is.na(group_marriage)) %>% \n",
+    "    filter(!is.na(religion)) %>% \n",
+    "    group_by(religion, group_marriage) %>% \n",
+    "    summarise(n = n()) %>% \n",
+    "    mutate(tot=sum(n)) %>% \n",
+    "    mutate(ratio=n/tot*100) %>% \n",
+    "    filter(group_marriage=='divorce') -> divorceratiobyreligion1\n",
+    "\n",
+    "divorceratiobyreligion1\n",
+    "divorceratiobyreligion1 %>% \n",
+    "    ggplot(aes(religion, ratio)) + geom_col()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 2) count"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<thead>\n",
+       "\t<tr><th scope=col>religion</th><th scope=col>group_marriage</th><th scope=col>n</th><th scope=col>tot</th><th scope=col>ratio</th></tr>\n",
+       "</thead>\n",
+       "<tbody>\n",
+       "\t<tr><td>no      </td><td>divorce </td><td>379     </td><td>4382    </td><td>8.649019</td></tr>\n",
+       "\t<tr><td>yes     </td><td>divorce </td><td>322     </td><td>4377    </td><td>7.356637</td></tr>\n",
+       "</tbody>\n",
+       "</table>\n"
+      ],
+      "text/latex": [
+       "\\begin{tabular}{r|lllll}\n",
+       " religion & group\\_marriage & n & tot & ratio\\\\\n",
+       "\\hline\n",
+       "\t no       & divorce  & 379      & 4382     & 8.649019\\\\\n",
+       "\t yes      & divorce  & 322      & 4377     & 7.356637\\\\\n",
+       "\\end{tabular}\n"
+      ],
+      "text/markdown": [
+       "\n",
+       "| religion | group_marriage | n | tot | ratio |\n",
+       "|---|---|---|---|---|\n",
+       "| no       | divorce  | 379      | 4382     | 8.649019 |\n",
+       "| yes      | divorce  | 322      | 4377     | 7.356637 |\n",
+       "\n"
+      ],
+      "text/plain": [
+       "  religion group_marriage n   tot  ratio   \n",
+       "1 no       divorce        379 4382 8.649019\n",
+       "2 yes      divorce        322 4377 7.356637"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "welfare %>% filter(!is.na(group_marriage)) %>% \n",
+    "    filter(!is.na(religion)) %>% \n",
+    "    count(religion, group_marriage) %>% \n",
+    "    group_by(religion) %>% \n",
+    "    mutate(tot=sum(n)) %>% \n",
+    "    mutate(ratio=n/tot*100) %>% \n",
+    "    filter(group_marriage=='divorce') -> divorceratiobyreligion2\n",
+    "\n",
+    "divorceratiobyreligion2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 3) SQL"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Loading required package: gsubfn\n",
+      "Loading required package: proto\n",
+      "Warning message:\n",
+      "“no DISPLAY variable so Tk is not available”Loading required package: RSQLite\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<thead>\n",
+       "\t<tr><th scope=col>religion</th><th scope=col>group_marriage</th><th scope=col>n</th><th scope=col>tot</th><th scope=col>ratio</th></tr>\n",
+       "</thead>\n",
+       "<tbody>\n",
+       "\t<tr><td>no      </td><td>divorce </td><td>379     </td><td>4382    </td><td>8.649019</td></tr>\n",
+       "\t<tr><td>yes     </td><td>divorce </td><td>322     </td><td>4377    </td><td>7.356637</td></tr>\n",
+       "</tbody>\n",
+       "</table>\n"
+      ],
+      "text/latex": [
+       "\\begin{tabular}{r|lllll}\n",
+       " religion & group\\_marriage & n & tot & ratio\\\\\n",
+       "\\hline\n",
+       "\t no       & divorce  & 379      & 4382     & 8.649019\\\\\n",
+       "\t yes      & divorce  & 322      & 4377     & 7.356637\\\\\n",
+       "\\end{tabular}\n"
+      ],
+      "text/markdown": [
+       "\n",
+       "| religion | group_marriage | n | tot | ratio |\n",
+       "|---|---|---|---|---|\n",
+       "| no       | divorce  | 379      | 4382     | 8.649019 |\n",
+       "| yes      | divorce  | 322      | 4377     | 7.356637 |\n",
+       "\n"
+      ],
+      "text/plain": [
+       "  religion group_marriage n   tot  ratio   \n",
+       "1 no       divorce        379 4382 8.649019\n",
+       "2 yes      divorce        322 4377 7.356637"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "library(sqldf)\n",
+    "\n",
+    "sqldf(\"\n",
+    "      select x.religion, x.group_marriage, n, tot, 1.*n/tot*100 as ratio\n",
+    "      from\n",
+    "      (select religion, group_marriage, count(*) as n\n",
+    "      from welfare\n",
+    "      where group_marriage is not null\n",
+    "      group by religion,group_marriage) x,\n",
+    "      (select religion, group_marriage, count(*) as tot\n",
+    "      from welfare\n",
+    "      where religion is not null and\n",
+    "      group_marriage is not null\n",
+    "      group by religion) y\n",
+    "      where x.religion=y.religion and\n",
+    "      x.group_marriage == 'divorce'\n",
+    "      \") -> divorceratiobyreligion3\n",
+    "\n",
+    "divorceratiobyreligion3"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "TRUE"
+      ],
+      "text/latex": [
+       "TRUE"
+      ],
+      "text/markdown": [
+       "TRUE"
+      ],
+      "text/plain": [
+       "[1] TRUE"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/html": [
+       "TRUE"
+      ],
+      "text/latex": [
+       "TRUE"
+      ],
+      "text/markdown": [
+       "TRUE"
+      ],
+      "text/plain": [
+       "[1] TRUE"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "\n",
+    "\n",
+    "all(divorceratiobyreligion1==divorceratiobyreligion2)\n",
+    "all(divorceratiobyreligion1==divorceratiobyreligion3)\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 문제 2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 1) group by"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<thead>\n",
+       "\t<tr><th scope=col>ageg</th><th scope=col>religion</th><th scope=col>group_marriage</th><th scope=col>n</th><th scope=col>tot</th><th scope=col>ratio</th></tr>\n",
+       "</thead>\n",
+       "<tbody>\n",
+       "\t<tr><td>middle  </td><td>no      </td><td>divorce </td><td>241     </td><td>2573    </td><td>9.366498</td></tr>\n",
+       "\t<tr><td>middle  </td><td>yes     </td><td>divorce </td><td>165     </td><td>2049    </td><td>8.052709</td></tr>\n",
+       "\t<tr><td>old     </td><td>no      </td><td>divorce </td><td>135     </td><td>1758    </td><td>7.679181</td></tr>\n",
+       "\t<tr><td>old     </td><td>yes     </td><td>divorce </td><td>157     </td><td>2308    </td><td>6.802426</td></tr>\n",
+       "\t<tr><td>young   </td><td>no      </td><td>divorce </td><td>  3     </td><td>  51    </td><td>5.882353</td></tr>\n",
+       "</tbody>\n",
+       "</table>\n"
+      ],
+      "text/latex": [
+       "\\begin{tabular}{r|llllll}\n",
+       " ageg & religion & group\\_marriage & n & tot & ratio\\\\\n",
+       "\\hline\n",
+       "\t middle   & no       & divorce  & 241      & 2573     & 9.366498\\\\\n",
+       "\t middle   & yes      & divorce  & 165      & 2049     & 8.052709\\\\\n",
+       "\t old      & no       & divorce  & 135      & 1758     & 7.679181\\\\\n",
+       "\t old      & yes      & divorce  & 157      & 2308     & 6.802426\\\\\n",
+       "\t young    & no       & divorce  &   3      &   51     & 5.882353\\\\\n",
+       "\\end{tabular}\n"
+      ],
+      "text/markdown": [
+       "\n",
+       "| ageg | religion | group_marriage | n | tot | ratio |\n",
+       "|---|---|---|---|---|---|\n",
+       "| middle   | no       | divorce  | 241      | 2573     | 9.366498 |\n",
+       "| middle   | yes      | divorce  | 165      | 2049     | 8.052709 |\n",
+       "| old      | no       | divorce  | 135      | 1758     | 7.679181 |\n",
+       "| old      | yes      | divorce  | 157      | 2308     | 6.802426 |\n",
+       "| young    | no       | divorce  |   3      |   51     | 5.882353 |\n",
+       "\n"
+      ],
+      "text/plain": [
+       "  ageg   religion group_marriage n   tot  ratio   \n",
+       "1 middle no       divorce        241 2573 9.366498\n",
+       "2 middle yes      divorce        165 2049 8.052709\n",
+       "3 old    no       divorce        135 1758 7.679181\n",
+       "4 old    yes      divorce        157 2308 6.802426\n",
+       "5 young  no       divorce          3   51 5.882353"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAA0gAAANICAIAAAByhViMAAAABmJLR0QA/wD/AP+gvaeTAAAg\nAElEQVR4nO3dZ2BUZb7A4TMppJCQhN5UOoiiWNfusvZVsay90iy4dkUXFewNlRUrooJ1LdfC\n6qpYVtde1oKLBUWwoiAdQkLq3A+RiEgJIZmBN8/zYe/MyZkz/8l9Jb+cKYnF4/EIAID1X0qy\nBwAAoG4IOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQKQle4DaiMfj8+fPT/YU\nDVGTJk1isdiSJUtKSkqSPQsNRXp6enZ2dhRFCxYsSPYsNCA5OTmpqamlpaXFxcXJnqUhKigo\nSPYI66v1NewqKiqSPUVDlJKSEovFfP9JpLS0tJSUlCiKrDoSKRaLWXisjzwVCwAQCGEHABAI\nYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQ\nCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcA\nEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEIi0ZA+wLsq9\n7rJkj7COKq36P8OvTu4YAMAKOWMHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAI\nYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQ\nCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcA\nEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQCGEH\nABAIYQcAEAhhBwAQCGEHABAIYQcAEAhhBwAQiLRkD1BLzZs3r7+Dl9TfoYPQuHHjxo0bJ3sK\nGpx6/a8eVigzMzMzMzPZUzQ4ZWVlyR5hPba+ht38+fPr7+BZ9XfoIBQXF5eUqF8SpFGjRtnZ\n2VE9/1cPy8nNzU1NTS0pKSkuLk72LA1OPB4vKChI9hTrq/U17MrLy5M9QsNVWVnp+0/CpKam\nVl2w6kikeDxe9b8WHusXr7EDAAiEsAMACISwAwAIhLADAAiEsAMACISwAwAIhLADAAiEsAMA\nCISwAwAIhLADAAiEsAMACISwAwAIhLADAAiEsAMACISwAwAIhLADAAiEsAMACISwAwAIhLAD\nAAiEsAMACISwAwAIhLADAAiEsAMACISwAwAIhLADAAiEsAMACISwAwAIhLADAAiEsAMACISw\nAwAIhLADAAiEsAMACISwAwAIhLADAAiEsAMACISwAwAIhLADAAiEsAMACISwAwAIhLADAAiE\nsAMACISwAwAIhLADAAiEsAMACISwAwAIhLADAAiEsAMACISwAwAIhLADAAiEsAMACERasgdg\n/ZPz34nJHmHdNWvT7skeAYCGyxk7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBA\nCDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCA\nQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQKQlewDgF7nX\nXZbsEdZRJVGUce1NyZ4CYD3gjB0AQCCEHQBAIIQdAEAghB0AQCCEHQBAIIQdAEAghB0AQCAS\n8Tl2i364/uhTXltuY6PGmz320BXLbpn59oUnXD1p2S39xz56UPPMep8PACAIiQi7rGZ9zz9/\n+2W3vDPu5ik991xut/kT52c12+/0QZtUb+nQJD0B4wEAhCERYZeW1W3HHbtVX5332YN/L+56\nx+k7L7fbz58tzO+54447bhIBALDmEv0au3j5vKsue+Lwy89rlhZb7ksfLyzJ751fXrTgp5/n\nVSZ4LACA9V+i/1bs1CeunNH6sEM75f7+Sx8VllW8MerwW74oi8fTslv27XdGv717VX/14Ycf\nnjhxYtXl7Ozs888/P0ETw5rIzV3B2qZO+N6SSCkpKVEUpaenW3iJV1FRkewR1mMJDbuK0unX\nPDr1iFtW8JfOK0p/mFMR71iw3eV3DWuRUfLf58Zdd9uFmZ3uP6JbXtUOn3zyyUsvvVR1uaCg\nYPjw4fU3Z0n9HZrQZWRk1Pq2Ft6qrc33FmonNTU1NTU12VM0OGVlZckeYT2W0LCb/vyohTl7\n7ts6+/dfSm3Ufvz48Uuv5e58+JAvJrz/7Oj/HTHyl5fide7cedttt6263LhxY/9fZ91kZdYf\n31sSKS0tLRaLVVZWOnuUeOXl5enp3j1ZS4kMu/j9D0/r2v+MGu69Rcusf8+bVX21f//+/fv3\nr7pcWVk5d+7cuh9wKafdqbUFCxbU+rYW3qqtzfcW1lR+fn5aWlppaWlhYWGyZ2mIsrKykj3C\n+ipxb54onvXEu4tK++/UeoVfXTD1jqOOHjC9tPoXo8rXfyrK69FthTsDAPB7iQu76RNea5S7\ndZfM37xYYepj94+99+koipp0OLpb6qKhw29/b9LkKZ9OfGTUea8WNTn75B4JGw8AYH2XuLB7\n9ZUZTTruvdzG6S9PeOa516MoiqXmDB01fPucb269evjQK0e9P6f9xTfd1C070W/aBQBYfyWu\nnAaOfWTg7zbuctuDuyy9nFHQa/BF1w9O2EAAAGFJ9AcUAwBQT4QdAEAghB0AQCCEHQBAIIQd\nAEAghB0AQCCEHQBAIIQdAEAghB0AQCCEHQBAIIQdAEAghB0AQCCEHQBAIIQdAEAghB0AQCCE\nHQBAIIQdAEAghB0AQCCEHQBAIIQdAEAghB0AQCCEHQBAIIQdAEAghB0AQCCEHQBAIIQdAEAg\nhB0AQCCEHQBAIIQdAEAghB0AQCCEHQBAIIQdAEAghB0AQCCEHQBAIIQdAEAghB0AQCCEHQBA\nIIQdAEAghB0AQCCEHQBAIIQdAEAghB0AQCCEHQBAIIQdAEAghB0AQCDSkj0AwOrF/vNmskdY\nd83atHuyRwDWFc7YAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEA\nBELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgB\nAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELY\nAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEIi3ZA9RS\nWtr6OjlhszJJPKuuPsRisar/9e1NvHg8nuwR1mPr63rNz8+vv4OX1N+hCd3arEwLj9qp138P\nG7iMjIyMjIxkT9HglJWVJXuE9dj6GnazZ8+uv4Pn1t+hCd3arEwLj9qp138PG6z8/Py0tLQl\nS5YUFhYme5aGqHnz5skeYX3lNXYAAIEQdgAAgRB2AACBEHYAAIEQdgAAgRB2AACBEHYAAIEQ\ndgAAgRB2AACBEHYAAIEQdgAAgRB2AACBEHYAAIEQdgAAgRB2AACBEHYAAIEQdgAAgRB2AACB\nEHYAAIEQdgAAgRB2AACBEHYAAIEQdgAAgRB2AACBEHYAAIEQdgAAgUhL9gAAJE3udZcle4R1\nVEUUVURRLIpykz3JOmvRkOHJHoEVcMYOACAQwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAgEMIO\nACAQwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAgEMIOACAQwg4AIBDC\nDgAgEMIOACAQwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAgEMIOACAQ\nwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAg\nEMIOACAQwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAgEMIOACAQwg4AIBDCDgAgEMIOACAQwg4A\nYHkjOxfktDom2VOsMWEHALAquxVkxWKxz4vK63DPepKWrDsGAFgvNMrIyMiIx2J1uWc9EXYA\nQANSOn/aOx/+sEOfXdJqnF/PzZhf53vWE0/FAgDhe2jj5gWdR/748vUdWnXbdbddCyviURSV\nzJt03jEH9O7WPrNxQffefS6547nKldw2q2C36qsz3h530J47tM3L7rTZDoMuvHfmtAtjsdgt\nPy7+/Z4Lv3qh34F79NiwRXaz9tv12ff6f3627DHzNhpWOn/iaYf+sWV+dnbTtjv0PeXVGUVr\n+TCFHQDQIJQu+u/O+w5ts8/RQy+9Njs1Vvj945tvuPXfH/9o890Pv+jcEzbNmXbpyX/eZsAD\nqz7It08N6bzzoBc/SznwxPP+slOXf48ctMlB/1jhnrPeG9G555//8dJ32+3f//wTDsqd+daQ\nAzfZd9h/qneoKP3p8C0Obbrv2f/5cNKEu/8248U799+2X8XaPUZPxQIADULRrIc3Gf3uUydt\nW3X1ir1OnFbZ6ZXvPtypRVYURdGl1zx88uZH3nHsdcP7DunQZIVHiFcsOODom+L5+34y5YmO\nWWlRFA0fcmi7rgeuaN/KU/a7dH5qu1e+mrhT66woiuJXXHpOry43XrX3q+cu3DWvURRFi2fc\n3ejxry89uEMURVGn0x857e5tr/u/l+eX7JGfUevH6IwdANAgpKQ2vm/gNlWXy4smXTF5Xuej\n7/ql6qIoilL+cv09URQ9MPrLlR1h/tSLPy4s3fmOUVVVF0VRbsf97+zT9vd7Fs9+4rFZRd0G\nPlhVdVEUxdKaXvBwv3hlySXP//DL/aUVjD1wo+qbtNiheRRFC8tX+GxwjR/j2twYAGB9kd54\n8/yl75hYMndCPB6ffOdOsWU0yt06iqL5E1f6Bog5738URdG+27dYdmPvIzb6/Z5L5j0fRVGn\n/t2W3ZjXpX8URTNenLF0nk0bpyzzDo66eC+tp2IBgAYhlpL565WURlEUbTZ07LW7tFlut4y8\nzVd2hMrSyiiKUn6bYCnpKzxNVhlFUcpvWy0WS4uiqHLpOblYLL2mo9eYsAMAGpzMgn1SYmcV\nf7/h3nv/+ibWytLpr701paBr7spu1Wyr7lH0xrMfzD61bePqjV888f0Kjp+/RxSNnXb/1GjL\nltUbF067J4qiVn1a1clDWKEEPRU78+0L+/7Wk7OX/H63dx6+6ezB/Q87ZtCwq2/7YlFpYmYD\nABqatKxuF3UvmPbIkS/9uLh64zND9+nTp89bpSv9uxEF3a/omJn26sBzppf88u7Vop9e6ffs\nCsIuq8VhfZtlTb7jmPeWBk+8fP6Vh98VS0m/YP8N6/Sh/EaCztjNnzg/q9l+pw/apHpLhybL\nn36c8vCwqx+ZduxfT904v+xfY267+KziB+88JzV5n90MAATs3OdufmCTfvt02vjYE4/s0S73\nyzefuvvpSVsOfnBw25yV3SSlUesJd/TftN9dG/fYfcCRu+Uu+f6xMfdse8Kuz932ctby58pS\nxvzzwo3/OHznTlsdP+DADrnFrz15z/Ofzdtz6At7F9T+Ta+rlaCw+/mzhfk9d9xxx01Wuke8\n9PrHPul81A2H7N4piqIuXVIOPW7EvdNPGtB+pd9cAIBay+1w1Cdfdznv1Ete+dd9D8ws6dS1\n57DR/7roxH1Xfatux435sk2vwZeNu3/UtW16bXfI7e+cs/2YgttebtModbk9W+144bRPtjzt\n3Ov+8/jo7xdn9trsDyOevH7IgStvobqQoLD7eGFJfu/88qIFsworW7Us+P0TwEvmv/JTacXg\n3X95w3BG/k69c278+OUZ0XFdEjMhABCwIz+ffeTvNma13PbmR59d4f5nT5139u9vGy+dPWdh\nwc6nPPf6adV7Trnv01hKxk55Gb+/l/zu+9z/9D41nKdD3wlzfpqRXpC5wv1rKEFh91FhWcUb\now6/5YuyeDwtu2Xffmf027vXsjuULZ4URVHPrF+fn904O23CJwuqr44cOfLVV1+tupyXlzdu\n3Lj6m3alT63D6hQUFNT6thYetWPVkRRrs/BWrbx83V2YlWVzO7Rul7fDmOmvDazaEq9YeMUF\nH+VucHaTtX/1WCy9aesN1vIYiQi7itIf5lTEOxZsd/ldw1pklPz3uXHX3XZhZqf7j+iWV71P\nZUlxFEXNlnnDcPP01PLFv77BYu7cudOnT6+6XFRUlJq6/AnPOrTuLijWeWuzMi08aseqIynq\n7wdxZeVafUJvvUpp1Prh07ba/8ZBuw346rg9tiyf880zY64Z/2Px+a+dnuzRfpGIsEtt1H78\n+PFLr+XufPiQLya8/+zo/x0xcufqfVIyMqMomldembN0ocwpq0jL+/XVhXvuuWfXrl2rLmdk\nZCxe/Ot7WOqcz4Ch1tZmZVp41I5VR1LU3w/iysrK9PS6/4C3urLfyDce2eii6+989MyHr4/l\nte/WfbvrHx1x9k6tkz3XL5LzH/UWLbP+PW/WslvSG28aRa9/WVy+QcYvYffNkoomO/x6Sm+X\nXXbZZZddqi5XVlbOnTu3/sZb6cfXwOoUFxfX+rYWHrVj1ZEUa7PwVis3dx1em7FGh5054rAz\nRyR7jhVLxOfYLZh6x1FHD5heWrF0Q+XrPxXl9fjNH9nIyP9Tq0apE978uepqedHkdxeVbr77\nutK/AADrvkSEXZMOR3dLXTR0+O3vTZo85dOJj4w679WiJmef3COKoqmP3T/23qejKIrFMoYc\n3POrcZe+9MHkH6d9cvewK7Pa9em/wToc7AAA65hEPBUbS80ZOmr42FvvvfXq4Yujxh27bH7x\nTZd1y06Lomj6yxOemdtuwPH7R1HU7agrhkSjHh1z9R2F6T023XnkOQN9OjEAQM0l6DV2GQW9\nBl90/eDfbd/ltgd3+fVabIejztzhqMRMBAAQmjULuyWzJz317DtffTVlVlnjbt26bbfPgVu0\nzqqnyQAAWCNrEHaPXz7or1fcM/PX90BEqektjh92+93D/lIPgwEAsGZq+uaJaY8eecjwu1P/\ncNh9z73+5Tc//fz91DdfePDw7dLHDj/k6Me+rtcRAQCoiZqesbvuzH81bnPEpJcfbJr2yzsa\nWrTvtH2ffeIbbfjUGddHh9xabxMCAKytkvPr+I9DZFx7U90esE7U9Izdo7OLup98fnXVVYml\nFfzt9B5Fsx6uh8EAAFgzNQ277JSUJTNX8BnTJT+XpKTk1OlIAADURk3D7vTOTabcM/C12UuW\n3Vgy762Bd0zO63xaPQwGAMCaqelr7Ab938WXbnbWbht2O+a0E7br0blJrHDqF+/ddfN93y9J\nH/l/A+t1RAAAaqKmYVfQ8/TJrzQ77axz7xkx/J6lG1tu0feeG285tmdB/cwGAMAaWIPPsWu/\n89FPvn/krO+nTZkyZX68SdeuXTtv2DIRf2sWAIAaWE3YzZ49OxaLNWvWbOmGlBYbdGmxQZf6\nHgsAgDW1mrBr0aJFSlp+Rdm8Dh06rGK3b775pg5nAgCgFlYTdhtttFFKWl4URb17907IPAAA\n1NJqwq76VNz48ePrfRYAANZCTd/8sN122133Q+Hvt89487Sd+hxTpyMBAKz32makXTPl4/OP\n3m/LTds1bdtp4GVPVG2vWPLdlQP377Fhi+xm7bff4+jnpyyowztdzRm7yZMnV1149913O332\n2eTCJr/5crz8vX/+5+03vqvDgQAAwvDg4YOGjX3q2t5tfnh91Ea7HtJjwIIh7bNP2nzzR0u2\nueXmh3rklz554zn79trk3zOn7pqXUSf3uJqw23jjjasvP7TXHx5a0T55Hf3lCQCA5aXtc/th\nvdtEUdR+5zO2yT3/5WmLTiwdcfeX8++b/uSxbRtHUbTNTju/3rTFGdd+MvGqrermHlf95dtv\nv73qwuDBg3e5bOSRLbKW2yE1vcmOhx5SJ6MAAISk46EbVV9unBKL4tHPb76ant29quqiKIql\n5p7VOe/EJz6LEhN2J598ctWFhx9++MABJ5zcLme5HSqWFC4uq5NJAACCkpmZuvymeLTcOxxS\nUmNRvLyu7rGmb574z3/+c+bvqi6KoneH7dB+k4vqahoAgIC12HGHsqLPH5lRVHU1XlE4asr8\ndvttWlfHr+mfFItXFN5y5on3vvTe7OJlojJe/t33Pxb0OKKupgEACFh+p8uP7TT6pJ0Pi990\nXre80if+fsYbS5q/MGyzujp+Tc/YfXjZrqff8tDcJh065iz+9ttvN9x0s1492i+eMSO71cEv\nv3FOXU0DABCyWPrYSR+dtUPF8BMO2nHf416cu/nTH3/6p/y6eUtsVPMzdhfc/FnTnpd+9e7w\nlHjZNnk5Pa4ZN2bTZou+eabXxn957ofCzZvW2UAAAAH4seQ3r5x79ptvfk5vFkVRWnbHi+99\n7uL6udOanrF7fUFJx6MOSImiKJY+sHXjj1/8KYqi3A77jjuyw3WHj62f2QAAApGR12qD7Jqe\nUKu1moZdTmpK2cJf3v7ac6tmPzw5repy50M2WPD1jfUyGgAAa6KmYXdMy+yvxl717ZKKKIra\n7td2zv+uK4lHURTN+3BeHb5HFwCAWqtp2J05+vjSOeO7Nm//8eKy9vsMqVz45tZHnHndFX87\n8MqPm/f+W72OCABATdT0ud4N97t58jM9RzwwISUWy2y63zOXHHzElbec92hF4/a7PvLPk+p1\nRAAAaqJmYRcvX1JSvsFeJ9+xz+CqDXsMf2zW3+Z+8tWC7j06ZKTE6nFAAABqpkZht/DbS/I6\nXrnDmM/fPKFH9caURk0369m03gYDAKgz6Uf3T/YIiVCjsMtueVSbRtdMHftStEzYAQCsL1I2\n2yLZIyRCjd48kZbdc+Lrd7f+/NyB1z8yp7SyvmcCAKhb8Xi8vO7E4/FkP6AVq+mbJ4664P7c\nznljhxwx7rxjC1q2ys1MXfar33zzTd2PBgBQR1JefatuDxj/4451e8A6UdOwy8nJycnZ/oAN\n6nUYAABqr6ZhN378+HqdAwCAtVTTDygGAGAdJ+wAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHs\nAAACIewAAAIh7AAA6tg7Z2ya2/bk6quzPjglNS13cnF5FEWVZbNuOfvQXp3bZjRuuukuh4x7\n66eqfb5/YfSft964ILtRs7YdDz3zhuLK2tyvsAMAqGObnv/Xwp/ueH5eSdXV58/+Z4utR/bI\nSoui6IY9eg97rvy8UQ+89dLjJ2xbOWiXbmO/WlC68PUt9zu1/E+DHnrhtdGXnfLm7efve9tn\ntbjfmv5JMQAAaiin7cn7ND3nkgem7nVaz4rSH858e+bBr/eNoqjwh7+f/9pPL815+E8FGVEU\nbbV9n7TnW1xyyht/GfPG7LKKM845Ze9WWdFO2/VsvtEXOQW1uF9n7AAA6lzskv5dPh0xJoqi\nH/99+sL0Ljds3TKKovlfTIjH47s1zYwtdeonsxdNnZzb7uzDNmved4P2ex150ojbHsz+00EH\n796mFvcq7AAA6t4m555eOP2m/ywoeeicVzc68Obc1FgURelNMlPSmy5Y9Bs/TDotJb3FIxOn\nv/X07du3jT9359AuzVsfddmrtbhTYQcAUPcatx60f9PM8+9+bNgX8069eruqjXmdB1WWzb3t\n29KcpW496fiLnvvx57duOf+Cv/9hr8MuuWHMKx999861XR6/7sxa3KnX2AEA1Ithg7ptO6Rf\nVtODztgwt2pLZtP9R+7R/qLdDmh+xyVbNi994fFRFz3+yVM3t07/efaIay6d3qRgQJ9tKmZ8\n+o/7pub3OL0W9yjsAADqRc+zzopf22+T8y5ZduOZz32aOWTgjWcdPWVmWbfN/3jvKx/+uWlm\n1PSSF0cuGnLrZftfPDOzWbtt9z7h37cMrcU9CjsAgHpRUTIvFku97sTuy26MpTYZPPL/Bo9c\nfufdz7rho7NuWMt7FHYAAHUtXlpcUjim//VNe166a16jhN2tsAMAqGOLZ96f02ZQWna70R+d\nmsj7FXYAAHWscatjPv9giza9euelJ/QTSIQdAEBdi2X02HLLxN+tz7EDAAiEsAMACISwAwAI\nhNfYAQDhi/9xx2SPkAjO2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAE\nQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEA\nBELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEIi3ZA9RSZmZmskeAFbAySTyr\njqSov4VXWVlZT0duCITdClTU36EJ3dqsTAuP2rHqSIr6+0FcXl5eT0duCNbXsJs/f379HTy3\n/g5N6NZmZVp41I5VR1LU6w9i56FrzWvsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHs\nAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh\n7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAAC\nIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAA\nAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewA\nAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHs\nAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh\n7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAMcAzsoAABZDSURB\nVAIh7AAAAiHsAAACIewAAAIh7AAAAiHsAAACIewAAAIh7AAAApGWmLupLJv91NjRz7/3xc8L\nK9t26Nb3mJP22Lz1cvvMfPvCE66etOyW/mMfPah5ZmImBABY3yUo7J69ZMh9X+UPOvPsrgUp\nH7/00C3DT6287d692jVedp/5E+dnNdvv9EGbVG/p0CQ9MeMBAAQgEWFXUfL9XZ/M3X7YiD9v\n3SKKoq49Nvvpv4f/46b/7XXt9svu9vNnC/N77rjjjpus5DAAAKxKIsKufMnUjTp02LdnwdIN\nsd5NGr2zsHC53T5eWJLfO7+8aMGswspWLQuWe/VfcXFxWVlZ1eV4PB6Lxep5aqgNK5PEs+pI\nCgtv3ZSIsMvI++OoUX+svlr88wdjfyzccECP5Xb7qLCs4o1Rh9/yRVk8npbdsm+/M/rt3av6\nq1deeeWECROqLhcUFLz44ov1N3BJ/R2a0DVr1qzWt7XwqB2rjqRYm4W3atXncaiFBL3GrtrU\nd566/oZx5RvtdcHe7ZfdXlH6w5yKeMeC7S6/a1iLjJL/PjfuutsuzOx0/xHd8hI8IQDAeipx\nYVe64Kuxf7/huY/n7XTgyX89ds/slN+cwk1t1H78+PFLr+XufPiQLya8/+zo/x0xcueqTf37\n9+/bt2/V5ZSUlAULFtTfqN6IS62tzcq08Kgdq46kqL8fxPF4PD8/v54OHrwEhV3Rj6+fefrI\nsq67XztmYI8WNfqXZIuWWf+eN6v6aufOnTt37lx1ubKycu7cufUyaBRF/qVjLazNMwgWHrVj\n1ZEUnjBdNyXkA4rj5VcPGdWoz8ljrvrryqpuwdQ7jjp6wPTSiqUbKl//qSivR7dEjAcAEIRE\nnLErmnnfx4tKj+uV88G77/x6x1ndtt686dTH7n91cf6A4/dv0uHobqkvDR1++6lH716QsuTD\nlx54tajJtScv/wYLAABWJhFht3DKV1EU3Xf9tctubLLB0Adu3X76yxOemdtuwPH7x1Jzho4a\nPvbWe2+9evjiqHHHLptffNNl3bIT/d4OAID1VyLKqfXOVz2184q/tMttD+6y9HJGQa/BF10/\nOAEDAQCEKCGvsQMAoP4JOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBA\nCDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCA\nQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsA\ngEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7\nAIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAI\nOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBA\nCDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCA\nQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsAgEAIOwCAQAg7AIBACDsA\ngEAIOwCAQKQle4BaysnJSfYIsAJWJoln1ZEU9bfwKioq6unIDYEzdgAAgVhfz9gVFhbW38Fz\n6+/QhG5tVqaFR+1YdSRFvf4gbty4cf0dPGzO2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgB\nAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELY\nAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC\n2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAE\nQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEA\nBELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgB\nAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELY\nAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC2AEABELYAQAEQtgBAARC\n2AEABELYAQAEQtgBAARC2AEABELYAQAEIi1h9/TOwzc9+upHPyxK7b7JlsecOqh7bqPa7QMA\nwAol6IzdlIeHXf3Iuzv85cSLzzwu5+vXLj7r5op4bfYBAGBlEnLGLl56/WOfdD7qhkN27xRF\n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"
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "welfare %>% filter(!is.na(religion)) %>% \n",
+    "    filter(!is.na(ageg)) %>% \n",
+    "    filter(!is.na(group_marriage)) %>% \n",
+    "    group_by(ageg,religion,group_marriage) %>% \n",
+    "    summarise(n=n()) %>% \n",
+    "    mutate(tot=sum(n)) %>% \n",
+    "    mutate(ratio=n/tot*100) %>% \n",
+    "    filter(group_marriage==\"divorce\") -> divorceratiobyreligionbyageg1\n",
+    "\n",
+    "divorceratiobyreligionbyageg1\n",
+    "\n",
+    "divorceratiobyreligionbyageg1  %>% ggplot(aes(x=ageg,y=ratio, fill=religion))+ geom_col(position = \"dodge\") "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 2) count"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<thead>\n",
+       "\t<tr><th scope=col>ageg</th><th scope=col>religion</th><th scope=col>group_marriage</th><th scope=col>n</th><th scope=col>tot</th><th scope=col>ratio</th></tr>\n",
+       "</thead>\n",
+       "<tbody>\n",
+       "\t<tr><td>middle  </td><td>no      </td><td>divorce </td><td>241     </td><td>2573    </td><td>9.366498</td></tr>\n",
+       "\t<tr><td>middle  </td><td>yes     </td><td>divorce </td><td>165     </td><td>2049    </td><td>8.052709</td></tr>\n",
+       "\t<tr><td>old     </td><td>no      </td><td>divorce </td><td>135     </td><td>1758    </td><td>7.679181</td></tr>\n",
+       "\t<tr><td>old     </td><td>yes     </td><td>divorce </td><td>157     </td><td>2308    </td><td>6.802426</td></tr>\n",
+       "\t<tr><td>young   </td><td>no      </td><td>divorce </td><td>  3     </td><td>  51    </td><td>5.882353</td></tr>\n",
+       "</tbody>\n",
+       "</table>\n"
+      ],
+      "text/latex": [
+       "\\begin{tabular}{r|llllll}\n",
+       " ageg & religion & group\\_marriage & n & tot & ratio\\\\\n",
+       "\\hline\n",
+       "\t middle   & no       & divorce  & 241      & 2573     & 9.366498\\\\\n",
+       "\t middle   & yes      & divorce  & 165      & 2049     & 8.052709\\\\\n",
+       "\t old      & no       & divorce  & 135      & 1758     & 7.679181\\\\\n",
+       "\t old      & yes      & divorce  & 157      & 2308     & 6.802426\\\\\n",
+       "\t young    & no       & divorce  &   3      &   51     & 5.882353\\\\\n",
+       "\\end{tabular}\n"
+      ],
+      "text/markdown": [
+       "\n",
+       "| ageg | religion | group_marriage | n | tot | ratio |\n",
+       "|---|---|---|---|---|---|\n",
+       "| middle   | no       | divorce  | 241      | 2573     | 9.366498 |\n",
+       "| middle   | yes      | divorce  | 165      | 2049     | 8.052709 |\n",
+       "| old      | no       | divorce  | 135      | 1758     | 7.679181 |\n",
+       "| old      | yes      | divorce  | 157      | 2308     | 6.802426 |\n",
+       "| young    | no       | divorce  |   3      |   51     | 5.882353 |\n",
+       "\n"
+      ],
+      "text/plain": [
+       "  ageg   religion group_marriage n   tot  ratio   \n",
+       "1 middle no       divorce        241 2573 9.366498\n",
+       "2 middle yes      divorce        165 2049 8.052709\n",
+       "3 old    no       divorce        135 1758 7.679181\n",
+       "4 old    yes      divorce        157 2308 6.802426\n",
+       "5 young  no       divorce          3   51 5.882353"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "\n",
+    "\n",
+    "welfare %>% filter(!is.na(religion)) %>% \n",
+    "    filter(!is.na(ageg)) %>% \n",
+    "    filter(!is.na(group_marriage)) %>% \n",
+    "    count(ageg, religion, group_marriage) %>% \n",
+    "    group_by(ageg, religion)  %>% \n",
+    "    mutate(tot=sum(n)) %>% \n",
+    "    mutate(ratio=n/tot*100) %>% \n",
+    "    filter(group_marriage==\"divorce\") -> divorceratiobyreligionbyageg2\n",
+    "\n",
+    "divorceratiobyreligionbyageg2\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 3) SQL"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<thead>\n",
+       "\t<tr><th scope=col>ageg</th><th scope=col>religion</th><th scope=col>group_marriage</th><th scope=col>n</th><th scope=col>tot</th><th scope=col>ratio</th></tr>\n",
+       "</thead>\n",
+       "<tbody>\n",
+       "\t<tr><td>middle  </td><td>no      </td><td>divorce </td><td>241     </td><td>2573    </td><td>9.366498</td></tr>\n",
+       "\t<tr><td>middle  </td><td>yes     </td><td>divorce </td><td>165     </td><td>2049    </td><td>8.052709</td></tr>\n",
+       "\t<tr><td>old     </td><td>no      </td><td>divorce </td><td>135     </td><td>1758    </td><td>7.679181</td></tr>\n",
+       "\t<tr><td>old     </td><td>yes     </td><td>divorce </td><td>157     </td><td>2308    </td><td>6.802426</td></tr>\n",
+       "\t<tr><td>young   </td><td>no      </td><td>divorce </td><td>  3     </td><td>  51    </td><td>5.882353</td></tr>\n",
+       "</tbody>\n",
+       "</table>\n"
+      ],
+      "text/latex": [
+       "\\begin{tabular}{r|llllll}\n",
+       " ageg & religion & group\\_marriage & n & tot & ratio\\\\\n",
+       "\\hline\n",
+       "\t middle   & no       & divorce  & 241      & 2573     & 9.366498\\\\\n",
+       "\t middle   & yes      & divorce  & 165      & 2049     & 8.052709\\\\\n",
+       "\t old      & no       & divorce  & 135      & 1758     & 7.679181\\\\\n",
+       "\t old      & yes      & divorce  & 157      & 2308     & 6.802426\\\\\n",
+       "\t young    & no       & divorce  &   3      &   51     & 5.882353\\\\\n",
+       "\\end{tabular}\n"
+      ],
+      "text/markdown": [
+       "\n",
+       "| ageg | religion | group_marriage | n | tot | ratio |\n",
+       "|---|---|---|---|---|---|\n",
+       "| middle   | no       | divorce  | 241      | 2573     | 9.366498 |\n",
+       "| middle   | yes      | divorce  | 165      | 2049     | 8.052709 |\n",
+       "| old      | no       | divorce  | 135      | 1758     | 7.679181 |\n",
+       "| old      | yes      | divorce  | 157      | 2308     | 6.802426 |\n",
+       "| young    | no       | divorce  |   3      |   51     | 5.882353 |\n",
+       "\n"
+      ],
+      "text/plain": [
+       "  ageg   religion group_marriage n   tot  ratio   \n",
+       "1 middle no       divorce        241 2573 9.366498\n",
+       "2 middle yes      divorce        165 2049 8.052709\n",
+       "3 old    no       divorce        135 1758 7.679181\n",
+       "4 old    yes      divorce        157 2308 6.802426\n",
+       "5 young  no       divorce          3   51 5.882353"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "sqldf(\"select x.ageg, x.religion, x.group_marriage ,n,tot, 1.*n/tot*100 as ratio\n",
+    "      from\n",
+    "      (\n",
+    "      select ageg, religion, group_marriage, count(group_marriage) as n\n",
+    "      from welfare\n",
+    "      where group_marriage is not null\n",
+    "      group by ageg,religion,group_marriage\n",
+    "      ) x,\n",
+    "      (\n",
+    "      select ageg, religion, group_marriage ,count(*) as tot\n",
+    "      from welfare\n",
+    "      where group_marriage is not null\n",
+    "      group by ageg,religion\n",
+    "      ) y\n",
+    "      where x.ageg=y.ageg and \n",
+    "      x.religion=y.religion and\n",
+    "      x.group_marriage == 'divorce'\n",
+    "      \") ->divorceratiobyreligionbyageg3\n",
+    "\n",
+    "divorceratiobyreligionbyageg3"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "TRUE"
+      ],
+      "text/latex": [
+       "TRUE"
+      ],
+      "text/markdown": [
+       "TRUE"
+      ],
+      "text/plain": [
+       "[1] TRUE"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/html": [
+       "TRUE"
+      ],
+      "text/latex": [
+       "TRUE"
+      ],
+      "text/markdown": [
+       "TRUE"
+      ],
+      "text/plain": [
+       "[1] TRUE"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "all(divorceratiobyreligionbyageg1==divorceratiobyreligionbyageg2)\n",
+    "all(divorceratiobyreligionbyageg1==divorceratiobyreligionbyageg3)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 문제 3"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<thead>\n",
+       "\t<tr><th scope=col>code_region</th><th scope=col>region</th></tr>\n",
+       "</thead>\n",
+       "<tbody>\n",
+       "\t<tr><td>1                    </td><td>서울                 </td></tr>\n",
+       "\t<tr><td>2                    </td><td>수도권(인천/경기)    </td></tr>\n",
+       "\t<tr><td>3                    </td><td>부산/경남/울산       </td></tr>\n",
+       "\t<tr><td>4                    </td><td>대구/경북            </td></tr>\n",
+       "\t<tr><td>5                    </td><td>대전/충남            </td></tr>\n",
+       "\t<tr><td>6                    </td><td>강원/충북            </td></tr>\n",
+       "\t<tr><td>7                    </td><td>광주/전남/전북/제주도</td></tr>\n",
+       "</tbody>\n",
+       "</table>\n"
+      ],
+      "text/latex": [
+       "\\begin{tabular}{r|ll}\n",
+       " code\\_region & region\\\\\n",
+       "\\hline\n",
+       "\t 1                     & 서울                 \\\\\n",
+       "\t 2                     & 수도권(인천/경기)    \\\\\n",
+       "\t 3                     & 부산/경남/울산       \\\\\n",
+       "\t 4                     & 대구/경북            \\\\\n",
+       "\t 5                     & 대전/충남            \\\\\n",
+       "\t 6                     & 강원/충북            \\\\\n",
+       "\t 7                     & 광주/전남/전북/제주도\\\\\n",
+       "\\end{tabular}\n"
+      ],
+      "text/markdown": [
+       "\n",
+       "| code_region | region |\n",
+       "|---|---|\n",
+       "| 1                     | 서울                  |\n",
+       "| 2                     | 수도권(인천/경기)     |\n",
+       "| 3                     | 부산/경남/울산        |\n",
+       "| 4                     | 대구/경북             |\n",
+       "| 5                     | 대전/충남             |\n",
+       "| 6                     | 강원/충북             |\n",
+       "| 7                     | 광주/전남/전북/제주도 |\n",
+       "\n"
+      ],
+      "text/plain": [
+       "  code_region region               \n",
+       "1 1           서울                 \n",
+       "2 2           수도권(인천/경기)    \n",
+       "3 3           부산/경남/울산       \n",
+       "4 4           대구/경북            \n",
+       "5 5           대전/충남            \n",
+       "6 6           강원/충북            \n",
+       "7 7           광주/전남/전북/제주도"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "region7 = data.frame(code_region=c(1,2,3,4,5,6,7),\n",
+    "                      region=c(\"서울\",\n",
+    "                               \"수도권(인천/경기)\",\n",
+    "                               \"부산/경남/울산\",\n",
+    "                               \"대구/경북\",\n",
+    "                               \"대전/충남\",\n",
+    "                               \"강원/충북\",\n",
+    "                               \"광주/전남/전북/제주도\"),stringsAsFactors = F)\n",
+    " \n",
+    " \n",
+    " region7"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 1) dplyr"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<thead>\n",
+       "\t<tr><th scope=col>region</th><th scope=col>ageg</th><th scope=col>ratio</th></tr>\n",
+       "</thead>\n",
+       "<tbody>\n",
+       "\t<tr><td>수도권(인천/경기)    </td><td>old                  </td><td>30.29461             </td></tr>\n",
+       "\t<tr><td>서울                 </td><td>old                  </td><td>33.23224             </td></tr>\n",
+       "\t<tr><td>대전/충남            </td><td>old                  </td><td>36.98332             </td></tr>\n",
+       "\t<tr><td>부산/경남/울산       </td><td>old                  </td><td>41.55796             </td></tr>\n",
+       "\t<tr><td>광주/전남/전북/제주도</td><td>old                  </td><td>42.69351             </td></tr>\n",
+       "\t<tr><td>강원/충북            </td><td>old                  </td><td>45.57709             </td></tr>\n",
+       "\t<tr><td>대구/경북            </td><td>old                  </td><td>46.28776             </td></tr>\n",
+       "</tbody>\n",
+       "</table>\n"
+      ],
+      "text/latex": [
+       "\\begin{tabular}{r|lll}\n",
+       " region & ageg & ratio\\\\\n",
+       "\\hline\n",
+       "\t 수도권(인천/경기)     & old                   & 30.29461             \\\\\n",
+       "\t 서울                  & old                   & 33.23224             \\\\\n",
+       "\t 대전/충남             & old                   & 36.98332             \\\\\n",
+       "\t 부산/경남/울산        & old                   & 41.55796             \\\\\n",
+       "\t 광주/전남/전북/제주도 & old                   & 42.69351             \\\\\n",
+       "\t 강원/충북             & old                   & 45.57709             \\\\\n",
+       "\t 대구/경북             & old                   & 46.28776             \\\\\n",
+       "\\end{tabular}\n"
+      ],
+      "text/markdown": [
+       "\n",
+       "| region | ageg | ratio |\n",
+       "|---|---|---|\n",
+       "| 수도권(인천/경기)     | old                   | 30.29461              |\n",
+       "| 서울                  | old                   | 33.23224              |\n",
+       "| 대전/충남             | old                   | 36.98332              |\n",
+       "| 부산/경남/울산        | old                   | 41.55796              |\n",
+       "| 광주/전남/전북/제주도 | old                   | 42.69351              |\n",
+       "| 강원/충북             | old                   | 45.57709              |\n",
+       "| 대구/경북             | old                   | 46.28776              |\n",
+       "\n"
+      ],
+      "text/plain": [
+       "  region                ageg ratio   \n",
+       "1 수도권(인천/경기)     old  30.29461\n",
+       "2 서울                  old  33.23224\n",
+       "3 대전/충남             old  36.98332\n",
+       "4 부산/경남/울산        old  41.55796\n",
+       "5 광주/전남/전북/제주도 old  42.69351\n",
+       "6 강원/충북             old  45.57709\n",
+       "7 대구/경북             old  46.28776"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "welfare %>% filter(!is.na(ageg)) %>% \n",
+    "            filter(!is.na(code_region)) %>% \n",
+    "            count(code_region,ageg) %>%\n",
+    "            left_join(region7, by=\"code_region\") %>% \n",
+    "            group_by(region) %>% \n",
+    "            mutate(tot=sum(n)) %>% \n",
+    "            mutate(ratio=n/tot*100) %>% \n",
+    "            select(region,ageg,ratio) -> ratiobyagegbyregion\n",
+    "\n",
+    "\n",
+    "ratiobyagegbyregion %>% filter(ageg=='old') %>% arrange(ratio) -> sort1\n",
+    "sort1"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 2) SQL"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<thead>\n",
+       "\t<tr><th scope=col>region</th><th scope=col>ageg</th><th scope=col>ratio</th></tr>\n",
+       "</thead>\n",
+       "<tbody>\n",
+       "\t<tr><td>수도권(인천/경기)    </td><td>old                  </td><td>30.29461             </td></tr>\n",
+       "\t<tr><td>서울                 </td><td>old                  </td><td>33.23224             </td></tr>\n",
+       "\t<tr><td>대전/충남            </td><td>old                  </td><td>36.98332             </td></tr>\n",
+       "\t<tr><td>부산/경남/울산       </td><td>old                  </td><td>41.55796             </td></tr>\n",
+       "\t<tr><td>광주/전남/전북/제주도</td><td>old                  </td><td>42.69351             </td></tr>\n",
+       "\t<tr><td>강원/충북            </td><td>old                  </td><td>45.57709             </td></tr>\n",
+       "\t<tr><td>대구/경북            </td><td>old                  </td><td>46.28776             </td></tr>\n",
+       "</tbody>\n",
+       "</table>\n"
+      ],
+      "text/latex": [
+       "\\begin{tabular}{r|lll}\n",
+       " region & ageg & ratio\\\\\n",
+       "\\hline\n",
+       "\t 수도권(인천/경기)     & old                   & 30.29461             \\\\\n",
+       "\t 서울                  & old                   & 33.23224             \\\\\n",
+       "\t 대전/충남             & old                   & 36.98332             \\\\\n",
+       "\t 부산/경남/울산        & old                   & 41.55796             \\\\\n",
+       "\t 광주/전남/전북/제주도 & old                   & 42.69351             \\\\\n",
+       "\t 강원/충북             & old                   & 45.57709             \\\\\n",
+       "\t 대구/경북             & old                   & 46.28776             \\\\\n",
+       "\\end{tabular}\n"
+      ],
+      "text/markdown": [
+       "\n",
+       "| region | ageg | ratio |\n",
+       "|---|---|---|\n",
+       "| 수도권(인천/경기)     | old                   | 30.29461              |\n",
+       "| 서울                  | old                   | 33.23224              |\n",
+       "| 대전/충남             | old                   | 36.98332              |\n",
+       "| 부산/경남/울산        | old                   | 41.55796              |\n",
+       "| 광주/전남/전북/제주도 | old                   | 42.69351              |\n",
+       "| 강원/충북             | old                   | 45.57709              |\n",
+       "| 대구/경북             | old                   | 46.28776              |\n",
+       "\n"
+      ],
+      "text/plain": [
+       "  region                ageg ratio   \n",
+       "1 수도권(인천/경기)     old  30.29461\n",
+       "2 서울                  old  33.23224\n",
+       "3 대전/충남             old  36.98332\n",
+       "4 부산/경남/울산        old  41.55796\n",
+       "5 광주/전남/전북/제주도 old  42.69351\n",
+       "6 강원/충북             old  45.57709\n",
+       "7 대구/경북             old  46.28776"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "sqldf(\"select x.region, x.ageg, 1.*n/tot*100 as ratio\n",
+    "       from\n",
+    "      (\n",
+    "      select region, ageg, count(*) as n\n",
+    "              from welfare w, region7 r\n",
+    "             where ageg is not null and\n",
+    "            region is not null and\n",
+    "            w.code_region = r.code_region\n",
+    "             group by region, ageg\n",
+    "      ) x,\n",
+    "      (\n",
+    "     select region, count(*) as tot\n",
+    "              from welfare w, region7 r\n",
+    "             where ageg is not null and\n",
+    "            region is not null and\n",
+    "            w.code_region = r.code_region\n",
+    "             group by region\n",
+    "      ) y\n",
+    "     where ageg == 'old' and\n",
+    "    x.region = y.region\n",
+    "    order by ratio\n",
+    "     \")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {
+    "_cell_guid": "79c7e3d0-c299-4dcb-8224-4455121ee9b0",
+    "_uuid": "d629ff2d2480ee46fbb7e2d37f6b5fab8052498a"
+   },
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAA0gAAANICAIAAAByhViMAAAABmJLR0QA/wD/AP+gvaeTAAAg\nAElEQVR4nOzdd2Ccdf3A8e9d9qIZXRQopawWEAqIUoa0QJFZxo8lS6ZAkQ2iyBSBH4gIKqtC\nS7XK+CkCChSpbBkisyCjLNkrIW3SpGmTu98fgVpG20Cf9Ll+eb3+4e7Jc998wnG5N89dnsvk\n8/kAAMDSL5v2AAAAJEPYAQBEQtgBAERC2AEARELYAQBEQtgBAERC2AEARELYAQBEojjtAQpF\nPp9vbm5Ods2amppsNjt79uyOjo5kV05RaWlpaWlpa2tr2oMkJpPJLLPMMiGEtra2uXPnpj1O\nYsrLy7PZbFtbW9qDJKaoqKi6ujqE0Nra2tXVlfY4iamsrMzlcrNnz057kMSUlJRUVlaGEGbM\nmJH2LEmqrq7u6OiI6bdEWVlZeXl5LpdraWlJfPG6urrE16QnhN1H8vl84k8V2Ww2m832xsop\nyufzmUwmpp8ok8lks9nQO/8NpC6mn2jePZXL5WL6uUJ0/+0VFxfPu6di+nCjTCYT2T0VQui+\npyL7ob7ivBQLABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEH\nABAJYQcAEAlhBwAQCWEHABAJYQcAEInitAeI3IFXhRCqQqhKe5DE9U17gJ6aOHhk2iNAYZk9\ndYPe/hYdIYQQqnv72yxZXSGUhlCa9hjJ6gih5NyL0p6CJDliBwAQCWEHABAJYQcAEAlhBwAQ\nCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcA\nEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEH\nABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlh\nBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEIlow27KMfs+1jo37SkAAJacOMMu19l43cyR\n61WXpD0IAMCSE2fYNT83oX777dKeAgBgiYoz7B6/+uldxyyb9hQAAEtUcdoDJC/fNeOaxhFX\n1pQucs+//e1vzz//fPfl8vLyffbZJ9lJMplMsgsCQLIymUxVVVWya7a1tSW7ID0XYdg1T59Y\nvdWOPdnz3nvvnTJlSvflurq6Qw45pDfnAoCCk8lkKioqkl1T2KUowrCbNumJnX54eE/2HDRo\n0PDhw7svV1dXd3Z2JjtJcXGE/3oBiEziT3+kKLbyyHe1Tn57+Pg+ZT3Zedy4cePGjeu+nMvl\nmpqakh2mvr4+1ncxAhCHXC7X3Nyc9hQkJrbsmPnKpPJRu6Q9BQBACmILu2cmPbrdjiukPQUA\nQAqiCrt8rn3ya0O2qitPexAAgBRE9R67TLbi0kmnpT0FAEA6ojpiBwDwVSbsAAAiIewAACIh\n7AAAIiHsAAAiIewAACIh7AAAIiHsAAAiIewAACIh7AAAIiHsAAAiIewAACIh7AAAIiHsAAAi\nIewAACIh7AAAIiHsAAAiIewAACIh7AAAIiHsAAAiIewAACIh7AAAIiHsAAAiIewAACIh7AAA\nIiHsAAAiIewAACIh7AAAIiHsAAAiIewAACIh7AAAIiHsAAAiIewAACIh7AAAIiHsAAAiIewA\nACIh7AAAIiHsAAAiIewAACIh7AAAIiHsAAAiIewAACIh7AAAIpHJ5/Npz1AQcrlcU1NTsmvW\n19dns9lZs2a1t7cnu3KKysvLy8vLm5ub0x4kMZlMpqGhIYTQ0tLS0dGR9jiJqaqqymazLS0t\naQ+SmOLi4tra2hBCc3NzZ2dn2uMkpqampqurq62tLe1BElNWVlZTUxNCaGxsjOkppra2tr29\nPabfEpWVlZWVlb3x9BdC6Nu3b+Jr0hOO2AEARELYAQBEQtgBAERC2AEARELYAQBEQtgBAERC\n2AEARELYAQBEojjtASJ34FUhhKoQqtIeJHFLwZknJw4emfYIkL7ZUzdY8t+0+xy+1Uv+G/em\nrhBKQyhNe4xkdYRQcu5FaU9BkhyxAwCIhLADAIiEsAMAiISwAwCIhLADAIiEsAMAiISwAwCI\nhLADAIiEsAMAiISwAwCIhLADAIiEsAMAiISwAwCIhLADAIiEsAMAiISwAwCIhLADAIiEsAMA\niISwAwCIhLADAIiEsAMAiISwAwCIhLADAIiEsAMAiISwAwCIhLADAIiEsAMAiISwAwCIhLAD\nAIiEsAMAiISwAwCIhLADAIiEsAMAiISwAwCIhLADAIiEsAMAiISwAwCIhLADAIiEsAMAiISw\nAwCIhLADAIiEsAMAiISwAwCIRLRhN+WYfR9rnZv2FAAAS06cYZfrbLxu5sj1qkvSHgQAYMmJ\nM+yan5tQv/12aU8BALBEFac9QK94/Oqndz396EXu1t7ePnfuRy/X5vP5TCbTy3MBQMFJ/Okv\nn88nuyA9F2HY5btmXNM44sqa0kXuefbZZ0+ZMqX7cl1d3R133NHLowFAYclmsw0NDcmu2djY\nmOyC9FyEL8U2T59YvdWOaU8BALCkRXjEbtqkJ3b64eE92XPPPfccNWpU9+WSkpKWlpZkJ6mu\nrg7By7sAFK58Pt/a2pr4mskuSM/FFnb5rtbJbw8f36esJzuvtdZaa621VvflXC7X1NSU7DBV\nVVXCDoBCls/nOzo60p6CxMT2UuzMVyaVj9ol7SkAAFIQW9g9M+nR7XZcIe0pAABSEFXY5XPt\nk18bslVdedqDAACkIKr32GWyFZdOOi3tKQAA0hHVETsAgK8yYQcAEAlhBwAQCWEHABAJYQcA\nEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEH\nABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlh\nBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQCWEHABAJ\nYQcAEAlhBwAQCWEHABAJYQcAEAlhBwAQiUw+n097hoKQy+WampqSXbO+vj6bzc6aNau9vT3Z\nlVNUXl5eXl7e3Nyc9iCJyWQyDQ0NIYSWlpaOjo60x0lMVVVVNpttaWlJe5DEFBcX19bWhhCa\nm5s7OzvTHicxNTU1XV1dbW1taQ+SmLKyspqamhBCY2NjTE8xtbW17e3tMf2WqKysrKys7I2n\nvxBC3759E1+TnnDEDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4A\nIBLFaQ8QuQOvCiFUhVCV9iCJi+2U4hMHj0x7BEjY7KkbpPWtuz+coTqtb987ukIoDaE07TGS\n1RFCybkXpT0FSXLEDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4A\nIBLCDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4AIBLCDgAgEsIO\nACASwg4AIBLCDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4AIBLC\nDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4AIBLCDgAgEsIOACASwg4AIBLCDgAgEsIOACAS\nwg4AIBIFEXZTjtn3sda5S2YfAIBYpR92uc7G62aOXK+6ZAnsAwAQsfTDrvm5CfXbb7dk9gEA\niFj6Yff41U/vOmbZJbMPAEDEitP99vmuGdc0jriypnQJ7PNZN9100zPPPNN9uaKi4vDDD/9C\nN1+kTCaT7IIAkKxMJlNdXZ3smrNmzUp2QXou5bBrnj6xeqsdl8w+n/XII49MmTKl+3JdXd2x\nxx77RVcAgKVaJpMpLy9Pdk1hl6KUw27apCd2+uEijpMltc9nDRo0aPjw4d2Xq6urOzs7v+gK\nC1dcnPK/XgBYpMSf/khRmuWR72qd/Pbw8X3KlsA+n2vcuHHjxo3rvpzL5Zqamr7oCgtXX19f\nCO9iBIAFyeVyzc3NaU9BYtLMjpmvTCoftcuS2QcAIHppht0zkx7dbscVlsw+AADRSy3s8rn2\nya8N2apuYW/YTGofAICvgkw+n097hoLQS++xO3ii99gtHSYOHpn2CJCw2VM3SHsElgIl516U\n+NNfCKFv376Jr0lPyA4AgEgIOwCASAg7AIBICDsAgEgIOwCASAg7AIBICDsAgEgIOwCASAg7\nAIBICDsAgEgIOwCASAg7AIBICDsAgEgIOwCASAg7AIBICDsAgEgIOwCASAg7AIBICDsAgEgI\nOwCASAg7AIBICDsAgEgIOwCASAg7AIBICDsAgEgIOwCASAg7AIBICDsAgEgIOwCASAg7AIBI\nCDsAgEgIOwCASAg7AIBICDsAgEgIOwCASAg7AIBICDsAgEgIOwCASAg7AIBICDsAgEgIOwCA\nSAg7AIBIZPL5fNozFIRcLtfU1JTsmvX19dlsdtasWe3t7cmunKLy8vLy8vLm5ua0B0lMJpNp\naGgIIbS0tHR0dKQ9TmKqqqqy2WxLS0vagySmuLi4trY2hNDc3NzZ2Zn2OImpqanp6upqa2tL\ne5DElJWV1dTUhBAaGxtjeoqpra1tb2+P6bdEZWVlZWVlbzz9hRD69u2b+Jr0hCN2AACREHYA\nAJEQdgAAkRB2AACREHYAAJEQdgAAkRB2AACREHYAwFLgmRsv2XnjdZbru0xpVe3QYeuOO/Py\n1q7/nijxnQcn7rzVRoP6VA5de6ODfzzp3Zd/nMlkfv3WrO6vdnw47Qf77DhiteXLq+pWHzH6\n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\nm2yyycyZM1daaaW0B2FhioqKttxyyxBC//79056Fhamuru6+p6qrq9OehYUZMGBA9z2VzTp2\nUNCGDBmy5ZZb9unTJ+1BSFImn8+nPQMAAAnwv1MAAJEQdgAAkfAeu97y0LW/vP6ex99oKVp9\nzfX2+f7Bq9f4m/9CkZv7wc0TLr/9n8+/NzM3aMhqY/c5dMw6A0MI7z7440POnTb/ngdMuH7n\nvuUpjcnC7hGPr8LR8sYFe4+791MbS6vW/uM1P/WYKihX7L971flX79O/ct6WBT2OPL6WasKu\nV0y/9tRzr3t53yO+P7x27l/HX3r6se2//83xRZm0xyKEEMKtZ5z42xdrDz7muFXrsk9OvebX\np30/d+mkby9X1fxEc0XD9kcdvOa8PYcsU5LinCzoHvH4KigVDWNPOmnk/Fsemvir6WtsFRZ8\nD7Kk5ec8MfXKW5pmz38m4gU9jjy+lnbCrhfk51zwx6dX3uvnu245NISwyirZ3fY7f9Kbhx64\nvD/lS19Xx+tXPt008tTzt/16vxDCqsPWfvuRPf7wy6e+fd7I9/49s3aNjTfeeM1FLsKS8fn3\niMdXgSmuWG3jjVebd/XDf//+F+2rXnHUpmFB9yBL1jv3nX/MRQ+0zc19YuuCHkfLlXp8Le28\nxy55s5vventO15gtB3VfLavdZER16ZN3vpPuVHTrnP3SikOGbLdG3ccbMiOWKe2c2RpCeHJm\nR+2I2s62GW+/92FuIUuwpHzuPeLxVcjynR+e85Mb9jjrBw3FmeAxVRgaRux33oUXX3zhKfNv\nXNDjyOMrAo7YJW/urGkhhDUq/vuKw/DK4ilPR/X5qkuvsj6jLr541Lyr7e89OuGt1sEHDgsh\nPN46t+v+i/f49fNz8/niyv5j9z96/62/ltqgLOAe8fgqZC/dcPY7A3ffbWhN91WPqUJQUjNw\nxZrQ1fGJ4zgLehzN3dzja6kn7JKX62gPITSU/PdR1LekqHPW7PQm4vO99NDNF/x8YueK3z55\n6+W75rzR2JVfqW7Ds648tV9ZxyO3TfzZpT8uH/q7PVdz6s50LOge2abI46tAdc1583+vf2nP\nX//k46seU4VrQc9Tnr8iIOySly0rDyF82JmrLirq3tI4t6u4T1mqQ/EJc2a8OOEXP7/tyQ83\n2emwI/bdqjKbCUXL33jjjR9/vWbTPU58fsq/br38qT0v3DTNQb/Ciko//x7Z7jiPrwL15u0X\n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\nAAAAAElFTkSuQmCC"
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "ratiobyagegbyregion %>% ggplot(aes(region,ratio,fill=ageg))+\n",
+    "                        geom_col()+\n",
+    "                        coord_flip() +\n",
+    "                        scale_x_discrete(limits=sort1$region)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.4.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}
